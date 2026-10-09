@@ -1,27 +1,25 @@
 # Eatasty
 
-Eatasty has a Spring Boot API, a React frontend, and PostgreSQL. The frontend
+Eatasty has a Spring Boot API and a React frontend. The frontend
 includes registration, login, a protected profile page, and logout. Authentication
 uses a server session stored in a browser cookie.
 
 ## Run locally
 
-Requirements: JDK 21, Node.js 20.19+ (or 22.12+), npm, and Docker with Compose.
+Requirements: JDK 21, Node.js 20.19+ (or 22.12+), and npm. Docker is optional.
 
-From the repository root, start PostgreSQL:
-
-```bash
-docker compose up -d db
-```
-
-In a second terminal, start Spring Boot. The included `application.yaml` matches
-the development database in `compose.yaml`:
+Run `EatTastyApplication` in IntelliJ IDEA, or start Spring Boot from the
+repository root:
 
 ```bash
 sh mvnw spring-boot:run
 ```
 
-In a third terminal, start React:
+The default database is a local H2 file, `eattasty-data.mv.db`, created in the
+project directory. It keeps registered users between restarts, needs no password
+or database server, and is ignored by Git.
+
+In another terminal, start React:
 
 ```bash
 cd frontend
@@ -34,6 +32,21 @@ account, then view your profile. Registration signs you in automatically.
 Vite forwards `/api` requests to Spring Boot at port 8080, so cookie sessions
 work without cross-origin requests during local development. Keep both servers
 running while using the frontend.
+
+### Optional PostgreSQL
+
+To use PostgreSQL instead of the local H2 file, start the database and enable
+the `postgres` Spring profile:
+
+```bash
+docker compose up -d db
+SPRING_PROFILES_ACTIVE=postgres sh mvnw spring-boot:run
+```
+
+In IntelliJ IDEA, set the active profile to `postgres` in the Spring Boot run
+configuration after starting Docker Compose. PostgreSQL uses local port 55432,
+so it does not interfere with a server already using port 5432. The development
+credentials in `compose.yaml` match `application-postgres.yaml`.
 
 ## Checks
 
@@ -58,9 +71,9 @@ user and session state; and `shared` contains the API client and reusable fields
 Slices expose their entry points through `index.js`. Dependencies point down
 the layers, so shared code does not import features or pages.
 
-The database password and local port in `compose.yaml` are for development.
-For deployment, set production database credentials through environment
-variables, serve the frontend and API on the same origin (or explicitly
+The database password in `compose.yaml` is for development. For deployment,
+set production database credentials through environment variables, serve the
+frontend and API on the same origin (or explicitly
 configure CORS and cookie policy), and review the application's security
 settings. A standalone frontend build is created with `cd frontend && npm run
 build` in `frontend/dist`.
